@@ -24,10 +24,16 @@ app = Flask(__name__)
 CORS(app)
 
 # Database path - persistent storage
-DB_PATH = os.environ.get('LATENT_DB_PATH', '/data/latent.db')
+# Try /data first (Railway volume), fallback to app directory
+if os.path.exists('/data') and os.access('/data', os.W_OK):
+    DB_PATH = '/data/latent.db'
+else:
+    DB_PATH = os.environ.get('LATENT_DB_PATH', './latent.db')
 
 # Ensure data directory exists
-os.makedirs(os.path.dirname(DB_PATH) if os.path.dirname(DB_PATH) else '.', exist_ok=True)
+db_dir = os.path.dirname(DB_PATH)
+if db_dir:
+    os.makedirs(db_dir, exist_ok=True)
 
 # Rate limit settings
 POST_COOLDOWN = 1800  # 30 minutes between posts
